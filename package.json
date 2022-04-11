@@ -1,0 +1,25 @@
+{
+  "name": "damonzserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.10",
+    "koa": "^2.13.4",
+    "koa-body": "^4.2.0",
+    "koa-router": "^10.1.1",
+    "koa-static": "^5.0.0",
+    "koa2-cors": "^2.0.6",
+    "mongoose": "^6.0.15",
+    "superagent": "^6.1.0",
+    "superagent-charset": "^1.2.0"
+  },
+  "keywords": [
+    "server"
+  ],
+  "author": "damon",
+  "license": "ISC"
+}
