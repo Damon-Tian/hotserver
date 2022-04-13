@@ -29,6 +29,8 @@ const phoneUserAgent = [
   "Mozilla/5.0 (iPhone; CPU iPhone OS 10_1_1 like Mac OS X) AppleWebKit/602.2.14 (KHTML, like Gecko) Version/10.0 MQQBrowser/8.8.2 Mobile/14B100 Safari/602.1 MttCustomUA/2 QBWebViewType/1 WKType/1",
 ];
 
+const dbModel = require("./db");
+
 router.get("/d", async (ctx, next) => {
   function getData() {
     return new Promise((resolve, reject) => {
@@ -288,37 +290,28 @@ router.get("/zhihu", async (ctx, next) => {
 });
 
 router.get("/pic", async (ctx, next) => {
-  let filePath = path.join(__dirname, `/upload/img.json`);
-  let list = JSON.parse(fs.readFileSync(filePath));
+  const list = await dbModel.Img.find();
   ctx.body = {
     code: 200,
     data: list,
   };
 });
 router.get("/pic/delete/:id", async (ctx, next) => {
-  let id = ctx.request.params.id;
-  let list = JSON.parse(
-    fs.readFileSync(path.join(__dirname, `/upload/img.json`))
-  );
-  let deleteIndex = -1;
-  let deleteItem = "";
-  for (let i = 0; i < list.length; i++) {
-    if (list[i].id == id) {
-      deleteItem = list[i];
-      deleteIndex = i;
-      break;
-    }
+  const id = ctx.request.params.id;
+  try {
+    let item = await dbModel.Img.findById(id);
+    await dbModel.Img.deleteOne({ id });
+    fs.unlinkSync(path.join(__dirname, "/upload" + item.src));
+    ctx.body = {
+      code: 200,
+      msg: "删除成功",
+    };
+  } catch {
+    ctx.body = {
+      code: -1,
+      msg: "删除失败",
+    };
   }
-  fs.unlinkSync(path.join(__dirname, "/upload" + deleteItem.src));
-  list.splice(deleteIndex, 1);
-  fs.writeFileSync(
-    path.join(__dirname, "/upload/img.json"),
-    JSON.stringify(list, null, "\t")
-  );
-  ctx.body = {
-    code: 200,
-    msg: "删除成功",
-  };
 });
 router.post("/upload", async (ctx, next) => {
   let file = ctx.request.files.file; // 获取上传文件
@@ -330,46 +323,18 @@ router.post("/upload", async (ctx, next) => {
   const upStream = fs.createWriteStream(filePath);
   reader.pipe(upStream);
 
-  let imgJsonPath = path.join(__dirname, `/upload/img.json`);
-  if (!fs.existsSync(imgJsonPath)) {
-    let img = [
-      {
-        id: 0,
-        width: data.width,
-        height: data.height,
-        src: "/img/" + file.name,
-        name: file.name,
-      },
-    ];
-    fs.writeFileSync(
-      imgJsonPath,
-      JSON.stringify(img, null, "\t"),
-      function (err) {
-        console.log("创建失败");
-      }
-    );
-  } else {
-    let dataJson = JSON.parse(fs.readFileSync(imgJsonPath));
-    let id = +dataJson[dataJson.length - 1].id + 1;
-    let imgObj = {
-      id,
-      width: data.width,
-      height: data.height,
-      src: "/img/" + file.name,
-    };
-    dataJson.push(imgObj);
-    fs.writeFileSync(
-      imgJsonPath,
-      JSON.stringify(dataJson, null, "\t"),
-      function (err) {
-        console.log("创建失败");
-      }
-    );
-  }
+  const imgObj = {
+    name: file.name,
+    width: data.width,
+    height: data.height,
+    src: "/img/" + file.name,
+  };
+  const img = new dbModel.Img(imgObj);
+  await img.save();
+
   ctx.body = {
-    data: file,
+    data: imgObj,
     code: 200,
-    z: next,
   };
 });
 module.exports = router;
