@@ -6,7 +6,6 @@ const router = require("./router");
 const koaBody = require("koa-body");
 const path = require("path");
 const koaStatic = require("koa-static");
-
 app.use(
   cors({
     origin: function (ctx) {

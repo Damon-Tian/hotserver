@@ -9,13 +9,8 @@ const Router = require("koa-router"),
   router = new Router();
 
 const userAgent = [
-  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.95 Safari/537.36 OPR/26.0.1656.60",
-  "Opera/8.0 (Windows NT 5.1; U; en)",
-  "Mozilla/5.0 (Windows NT 5.1; U; en; rv:1.8.1) Gecko/20061208 Firefox/2.0.0 Opera 9.50",
-  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1; en) Opera 9.50",
-  "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/39.0.2171.71 Safari/537.36",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.11 (KHTML, like Gecko) Chrome/23.0.1271.64 Safari/537.11",
-  "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-US) AppleWebKit/534.16 (KHTML, like Gecko) Chrome/10.0.648.133 Safari/534.16",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36",
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.61 Safari/537.36",
 ];
 
 const phoneUserAgent = [
@@ -35,10 +30,14 @@ router.get("/d", async (ctx, next) => {
   function getData() {
     return new Promise((resolve, reject) => {
       let xx = "";
+      console.log(
+        userAgent[0],
+        "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+      );
       superagent
         .get("https://www.bilibili.com/v/popular/all")
         .set({
-          "User-Agent": userAgent[Math.floor(Math.random() * 7)],
+          "User-Agent": userAgent[0],
         })
         .buffer(true)
         .charset("utf-8")
@@ -47,6 +46,7 @@ router.get("/d", async (ctx, next) => {
             console.log(err);
             return err;
           }
+          console.log(data.text);
           let reg = /rankList(.*)}]/g;
           xx = data.text.match(reg);
           resolve(xx);
@@ -59,7 +59,6 @@ router.get("/d", async (ctx, next) => {
     code: 200,
   };
 });
-
 router.get("/douban/movie/:page", async (ctx, next) => {
   let page = ctx.params.page;
   if (page > 11) {
@@ -72,7 +71,7 @@ router.get("/douban/movie/:page", async (ctx, next) => {
       superagent
         .get("https://movie.douban.com/top250?start=" + (page - 1) * 25)
         .set({
-          "User-Agent": userAgent[Math.floor(Math.random() * 7)],
+          "User-Agent": userAgent[0],
         })
         .buffer(true)
         .charset("utf-8")
@@ -135,7 +134,7 @@ router.get("/douban/tv/:page", async (ctx, next) => {
           "https://www.douban.com/doulist/116238969/?start=" + (page - 1) * 25
         )
         .set({
-          "User-Agent": userAgent[Math.floor(Math.random() * 7)],
+          "User-Agent": userAgent[0],
         })
         .buffer(true)
         .charset("utf-8")
@@ -192,7 +191,7 @@ router.get("/douban/book/:page", async (ctx, next) => {
       superagent
         .get("https://book.douban.com/top250?start=" + (page - 1) * 25)
         .set({
-          "User-Agent": userAgent[Math.floor(Math.random() * 7)],
+          "User-Agent": userAgent[0],
         })
         .buffer(true)
         .charset("utf-8")
@@ -300,7 +299,7 @@ router.get("/pic/delete/:id", async (ctx, next) => {
   const id = ctx.request.params.id;
   try {
     let item = await dbModel.Img.findById(id);
-    await dbModel.Img.deleteOne({ id });
+    await dbModel.Img.deleteOne({ _id: id });
     fs.unlinkSync(path.join(__dirname, "/upload" + item.src));
     ctx.body = {
       code: 200,
